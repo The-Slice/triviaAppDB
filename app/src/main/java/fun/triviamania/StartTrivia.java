@@ -40,7 +40,7 @@ public class StartTrivia extends Activity {
     QuestionObject q = new QuestionObject();
     boolean waitAnswers = true;
 
-
+//hello
 
     @Override
     protected void onCreate(Bundle savedInstanceState)  {
