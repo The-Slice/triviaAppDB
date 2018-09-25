@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">Trivia Mania</string>
+    <string name="title_activity_main_menu">MainMenu</string>
+    <string name="False"></string>
+    <string name="True"></string>
+    <string name="StartOver">Start Over</string>
+    <string name="cButton"></string>
+    <string name="dButton"></string>
+
+</resources>
