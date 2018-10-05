@@ -306,12 +306,12 @@ public class StartTrivia extends Activity {
 
 
                 } catch (JSONException f) {
-                    Log.e("Oh hey Im JaSON", "SHOOOOOOOP", f);
+                    Log.e("JSON", "Error Detected: JSON", f);
                     return;
 
                 } catch (IOException e) {
 
-                    Log.d("Oh hey Im IO", "WOOOOOOOOP");
+                    Log.d("IO", "Error Detected: IOException");
                     return;
                 }
 
