@@ -25,7 +25,8 @@ import okhttp3.Response;
 
 import static org.apache.commons.lang3.StringEscapeUtils.unescapeHtml4;
 
-public class StartTrivia extends Activity {
+public class StartTrivia extends Activity implements AsyncResponse {
+    static FetchQuestions fetch = new FetchQuestions(null);
     static OkHttpClient oKClient = new OkHttpClient();
     static final int amountQ = 10;
     static Request triviaAccess;
@@ -41,16 +42,14 @@ public class StartTrivia extends Activity {
     boolean waitAnswers = true;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState)  {
+    protected void onCreate(Bundle savedInstanceState) {
         StartTrivia actOK = new StartTrivia();
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_trivia_start);
-        TextView qBox = (TextView)findViewById(R.id.qBox);
-        TextView cBox = (TextView)findViewById(R.id.cBox);
+        TextView qBox = (TextView) findViewById(R.id.qBox);
+        TextView cBox = (TextView) findViewById(R.id.cBox);
 
         cBox.setText("Score: " + score);
-
-        retrieveQuestions(startGame(actOK));
 
         final Button tButton = (Button) findViewById(R.id.tButton);
         final Button fButton = (Button) findViewById(R.id.fButton);
@@ -63,15 +62,12 @@ public class StartTrivia extends Activity {
         cButton.getBackground().setColorFilter(0xFF000000, PorterDuff.Mode.MULTIPLY);
         dButton.getBackground().setColorFilter(0xFF000000, PorterDuff.Mode.MULTIPLY);
 
-
         startOver.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 StartTrivia actOK = new StartTrivia();
 
-
-                retrieveQuestions(startGame(actOK));
-
+                startGame(actOK);
 
                 startOver.setVisibility(View.INVISIBLE);
 
@@ -80,16 +76,16 @@ public class StartTrivia extends Activity {
 
         tButton.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View view)  {
+            public void onClick(View view) {
 
 
                 check = tButton.getText().toString();
 
-                if(checkAnswer(check)){
+                if (checkAnswer(check)) {
 
                     tButton.getBackground().setColorFilter(0xFF00FF00, PorterDuff.Mode.DARKEN);
 
-                } else{
+                } else {
 
                     tButton.getBackground().setColorFilter(0xFFFF0000, PorterDuff.Mode.DARKEN);
                 }
@@ -104,11 +100,11 @@ public class StartTrivia extends Activity {
             public void onClick(View view) {
 
                 check = fButton.getText().toString();
-                if(checkAnswer(check)){
+                if (checkAnswer(check)) {
 
                     fButton.getBackground().setColorFilter(0xFF00FF00, PorterDuff.Mode.DARKEN);
 
-                } else{
+                } else {
 
                     fButton.getBackground().setColorFilter(0xFFFF0000, PorterDuff.Mode.DARKEN);
                 }
@@ -125,11 +121,11 @@ public class StartTrivia extends Activity {
             public void onClick(View view) {
 
                 check = cButton.getText().toString();
-                if(checkAnswer(check)){
+                if (checkAnswer(check)) {
 
                     cButton.getBackground().setColorFilter(0xFF00FF00, PorterDuff.Mode.DARKEN);
 
-                } else{
+                } else {
 
                     cButton.getBackground().setColorFilter(0xFFFF0000, PorterDuff.Mode.DARKEN);
                 }
@@ -145,16 +141,16 @@ public class StartTrivia extends Activity {
             public void onClick(View view) {
 
                 check = dButton.getText().toString();
-                if(checkAnswer(check)){
+                if (checkAnswer(check)) {
 
                     dButton.getBackground().setColorFilter(0xFF00FF00, PorterDuff.Mode.DARKEN);
 
-                } else{
+                } else {
 
                     dButton.getBackground().setColorFilter(0xFFFF0000, PorterDuff.Mode.DARKEN);
                 }
 
-             setInvisible("d");
+                setInvisible("d");
 
             }
         });
@@ -171,21 +167,22 @@ public class StartTrivia extends Activity {
                 dButton.getBackground().setColorFilter(0xFF000000, PorterDuff.Mode.MULTIPLY);
 
 
-
             }
         });
+
+        startGame(actOK);
     }
 
 
-    protected void displayQuestion(QuestionObject q){
-        TextView qBox = (TextView)findViewById(R.id.qBox);
+    protected void displayQuestion(QuestionObject q) {
+        TextView qBox = (TextView) findViewById(R.id.qBox);
+        qBox.setVisibility(View.VISIBLE);
         qBox.setText(q.getQuestion());
         qBox.invalidate();
 
-
     }
 
-    public static QuestionObject Parse(JSONObject Question)throws JSONException {
+    public static QuestionObject Parse(JSONObject Question) throws JSONException {
 
         QuestionObject qObject = new QuestionObject();
 
@@ -202,7 +199,6 @@ public class StartTrivia extends Activity {
         qObject.shuffleAnswers();
 
 
-
         return qObject;
 
     }
@@ -216,132 +212,88 @@ public class StartTrivia extends Activity {
         Button fButton = (Button) findViewById(R.id.fButton);
         Button cButton = (Button) findViewById(R.id.cButton);
         Button dButton = (Button) findViewById(R.id.dButton);
-        TextView cBox = (TextView)findViewById(R.id.cBox);
-        TextView qBox = (TextView)findViewById(R.id.qBox);
+        TextView cBox = (TextView) findViewById(R.id.cBox);
+        TextView qBox = (TextView) findViewById(R.id.qBox);
         waitAnswers = true;
         cBox.setText("Score: " + score);
-        qBox.setVisibility(View.VISIBLE);
         cButton.setVisibility(View.INVISIBLE);
         dButton.setVisibility(View.INVISIBLE);
         fButton.setVisibility(View.INVISIBLE);
         tButton.setVisibility(View.INVISIBLE);
+        fetch = new FetchQuestions(this);
+        fetch.delegate = this;
+        fetch.execute(amountQ);
         return actOK;
 
     }
 
-    public void setQuestions(){
+    public void setQuestions() {
 
-        while(waitAnswers == true){
+        try {
 
+            q = Parse(questions.getJSONArray("results").getJSONObject(QuestionNumber));
 
-            Log.e("Wait", "I'm Looping");
-        }
-
-      try {
-
-          q = Parse(questions.getJSONArray("results").getJSONObject(QuestionNumber));
-
-      }catch (JSONException f) {
+        } catch (JSONException f) {
 
         }
         final Button tButton = (Button) findViewById(R.id.tButton);
         final Button fButton = (Button) findViewById(R.id.fButton);
         final Button cButton = (Button) findViewById(R.id.cButton);
         final Button dButton = (Button) findViewById(R.id.dButton);
-        TextView cBox = (TextView)findViewById(R.id.cBox);
-        TextView qBox = (TextView)findViewById(R.id.qBox);
-
         final Button startOver = (Button) findViewById(R.id.startOver);
+        TextView cBox = (TextView) findViewById(R.id.cBox);
+        TextView qBox = (TextView) findViewById(R.id.qBox);
+        cBox.setVisibility(View.VISIBLE);
+
+        if (QuestionNumber == amountQ) {
 
 
-       if (QuestionNumber == amountQ) {
+            qBox.setVisibility(View.INVISIBLE);
+            cButton.setVisibility(View.INVISIBLE);
+            dButton.setVisibility(View.INVISIBLE);
+            fButton.setVisibility(View.INVISIBLE);
+            tButton.setVisibility(View.INVISIBLE);
+
+            cBox.setText("Final Score: " + score);
+
+            startOver.setVisibility(View.VISIBLE);
+
+            fButton.setText("");
+            tButton.setText("");
+            cButton.setText("");
+            dButton.setText("");
 
 
-           qBox.setVisibility(View.INVISIBLE);
-           cButton.setVisibility(View.INVISIBLE);
-           dButton.setVisibility(View.INVISIBLE);
-           fButton.setVisibility(View.INVISIBLE);
-           tButton.setVisibility(View.INVISIBLE);
-
-           cBox.setText("Final Score: " + score);
-
-           startOver.setVisibility(View.VISIBLE);
-
-           fButton.setText("");
-           tButton.setText("");
-           cButton.setText("");
-           dButton.setText("");
+        } else {
 
 
-       }else {
+            setAnswers(q);
 
+            displayQuestion(q);
 
+            QuestionNumber++;
 
-
-           setAnswers(q);
-
-           displayQuestion(q);
-
-           QuestionNumber++;
-
-               }
-
-
-       }
-
-
-    public void retrieveQuestions(final StartTrivia actOK){
-
-        AsyncTask.execute(new Runnable() {
-            @Override
-            public void run() {
-
-                try {
-
-                    okResponse = oKClient.newCall(triviaAccess).execute();
-                    reString = okResponse.body().string();
-
-                    questions = new JSONObject(reString);
-
-
-
-                } catch (JSONException f) {
-                    Log.e("JSON", "Error Detected: JSON", f);
-                    return;
-
-                } catch (IOException e) {
-
-                    Log.d("IO", "Error Detected: IOException");
-                    return;
-                }
-
-
-                waitAnswers = false;
-            }
-
-        });
-
-
-
-        setQuestions();
+        }
 
 
     }
 
-    public void setAnswers(QuestionObject q){
-
+    public void setAnswers(QuestionObject q) {
 
         Button tButton = (Button) findViewById(R.id.tButton);
         Button fButton = (Button) findViewById(R.id.fButton);
         Button cButton = (Button) findViewById(R.id.cButton);
         Button dButton = (Button) findViewById(R.id.dButton);
+        TextView cBox = (TextView) findViewById(R.id.cBox);
+        TextView qBox = (TextView) findViewById(R.id.qBox);
+
         tButton.setEnabled(true);
         fButton.setEnabled(true);
         cButton.setEnabled(true);
-        dButton .setEnabled(true);
+        dButton.setEnabled(true);
 
 
-        if(q.isType() == false){
+        if (q.isType() == false) {
 
             fButton.setVisibility(View.VISIBLE);
             tButton.setVisibility(View.VISIBLE);
@@ -352,7 +304,8 @@ public class StartTrivia extends Activity {
             cButton.setText(q.getAnswers().get(2));
             dButton.setText(q.getAnswers().get(3));
 
-        }else{
+        } else {
+
             fButton.setVisibility(View.VISIBLE);
             tButton.setVisibility(View.VISIBLE);
             cButton.setVisibility(View.INVISIBLE);
@@ -365,61 +318,58 @@ public class StartTrivia extends Activity {
 
     }
 
-    public boolean checkAnswer(String check){
+    public boolean checkAnswer(String check) {
 
-        TextView cBox = (TextView)findViewById(R.id.cBox);
+        TextView cBox = (TextView) findViewById(R.id.cBox);
 
+        if (q.getCorrectAnswer().equals(check)) {
 
-        if(q.getCorrectAnswer().equals(check)){
+            scoreAdd();
+            cBox.setText("Score: " + score);
 
-                scoreAdd();
-                cBox.setText("Score: " + score);
+            return true;
 
-                return true;
-
-            }
-
+        }
 
 
-            return false;
+        return false;
     }
 
-   public void setInvisible(String select){
-       Button tButton = (Button) findViewById(R.id.tButton);
-       Button fButton = (Button) findViewById(R.id.fButton);
-       Button cButton = (Button) findViewById(R.id.cButton);
-       Button dButton = (Button) findViewById(R.id.dButton);
-       Button nButton = (Button) findViewById(R.id.nButton);
+    public void setInvisible(String select) {
+        Button tButton = (Button) findViewById(R.id.tButton);
+        Button fButton = (Button) findViewById(R.id.fButton);
+        Button cButton = (Button) findViewById(R.id.cButton);
+        Button dButton = (Button) findViewById(R.id.dButton);
+        Button nButton = (Button) findViewById(R.id.nButton);
 
-       tButton.setEnabled(false);
-       fButton.setEnabled(false);
-       cButton.setEnabled(false);
-       dButton .setEnabled(false);
+        tButton.setEnabled(false);
+        fButton.setEnabled(false);
+        cButton.setEnabled(false);
+        dButton.setEnabled(false);
 
 
-
-       if(select == "t"){
+        if (select == "t") {
 
             cButton.setVisibility(View.INVISIBLE);
             dButton.setVisibility(View.INVISIBLE);
             fButton.setVisibility(View.INVISIBLE);
             nButton.setVisibility(View.VISIBLE);
 
-        }else if (select == "f"){
+        } else if (select == "f") {
 
             cButton.setVisibility(View.INVISIBLE);
             dButton.setVisibility(View.INVISIBLE);
             tButton.setVisibility(View.INVISIBLE);
             nButton.setVisibility(View.VISIBLE);
 
-        }else if (select == "c"){
+        } else if (select == "c") {
 
             dButton.setVisibility(View.INVISIBLE);
             fButton.setVisibility(View.INVISIBLE);
             tButton.setVisibility(View.INVISIBLE);
             nButton.setVisibility(View.VISIBLE);
 
-        }else if (select == "d"){
+        } else if (select == "d") {
 
             cButton.setVisibility(View.INVISIBLE);
             fButton.setVisibility(View.INVISIBLE);
@@ -429,35 +379,32 @@ public class StartTrivia extends Activity {
         }
 
 
-       if(q.getCorrectAnswer().equals(tButton.getText())){
+        if (q.getCorrectAnswer().equals(tButton.getText())) {
 
 
-           tButton.getBackground().setColorFilter(0xFF00FF00, PorterDuff.Mode.DARKEN);
-           tButton.setVisibility(View.VISIBLE);
+            tButton.getBackground().setColorFilter(0xFF00FF00, PorterDuff.Mode.DARKEN);
+            tButton.setVisibility(View.VISIBLE);
 
-       }else if (q.getCorrectAnswer().equals(fButton.getText())){
+        } else if (q.getCorrectAnswer().equals(fButton.getText())) {
 
 
             fButton.getBackground().setColorFilter(0xFF00FF00, PorterDuff.Mode.DARKEN);
-           fButton.setVisibility(View.VISIBLE);
+            fButton.setVisibility(View.VISIBLE);
 
 
-       }else if (q.getCorrectAnswer().equals(cButton.getText())){
+        } else if (q.getCorrectAnswer().equals(cButton.getText())) {
 
 
-           cButton.getBackground().setColorFilter(0xFF00FF00, PorterDuff.Mode.DARKEN);
-           cButton.setVisibility(View.VISIBLE);
+            cButton.getBackground().setColorFilter(0xFF00FF00, PorterDuff.Mode.DARKEN);
+            cButton.setVisibility(View.VISIBLE);
 
-       }else if (q.getCorrectAnswer().equals(dButton.getText())){
-
+        } else if (q.getCorrectAnswer().equals(dButton.getText())) {
 
 
             dButton.getBackground().setColorFilter(0xFF00FF00, PorterDuff.Mode.DARKEN);
             dButton.setVisibility(View.VISIBLE);
 
-
-       }
-
+        }
 
     }
 
@@ -469,4 +416,9 @@ public class StartTrivia extends Activity {
         return score;
     }
 
+    @Override
+    public void processFinish(JSONObject output) {
+        questions = output;
+        setQuestions();
+    }
 }
