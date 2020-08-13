@@ -14,6 +14,8 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
 
+import junit.framework.Test;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -26,31 +28,20 @@ import okhttp3.Response;
 import static org.apache.commons.lang3.StringEscapeUtils.unescapeHtml4;
 
 public class StartTrivia extends Activity implements AsyncResponse {
+    static TestInternet test = new TestInternet();
     static FetchQuestions fetch = new FetchQuestions(null);
-    static OkHttpClient oKClient = new OkHttpClient();
     static final int amountQ = 10;
-    static Request triviaAccess;
-    static Request triviaToken;
-    static Request triviaReset;
     static int QuestionNumber = 0;
     static int score = 0;
-    static Response okResponse;
-    static String reString;
     static JSONObject questions = new JSONObject();
     String check = "false";
     QuestionObject q = new QuestionObject();
-    boolean waitAnswers = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         StartTrivia actOK = new StartTrivia();
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_trivia_start);
-        TextView qBox = (TextView) findViewById(R.id.qBox);
-        TextView cBox = (TextView) findViewById(R.id.cBox);
-
-        cBox.setText("Score: " + score);
-
         final Button tButton = (Button) findViewById(R.id.tButton);
         final Button fButton = (Button) findViewById(R.id.fButton);
         final Button cButton = (Button) findViewById(R.id.cButton);
@@ -77,7 +68,6 @@ public class StartTrivia extends Activity implements AsyncResponse {
         tButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
 
                 check = tButton.getText().toString();
 
@@ -179,7 +169,6 @@ public class StartTrivia extends Activity implements AsyncResponse {
         qBox.setVisibility(View.VISIBLE);
         qBox.setText(q.getQuestion());
         qBox.invalidate();
-
     }
 
     public static QuestionObject Parse(JSONObject Question) throws JSONException {
@@ -198,13 +187,11 @@ public class StartTrivia extends Activity implements AsyncResponse {
 
         qObject.shuffleAnswers();
 
-
         return qObject;
 
     }
 
     public StartTrivia startGame(final StartTrivia actOK) {
-        triviaAccess = new Request.Builder().url("https://opentdb.com/api.php?amount=" + amountQ).build();
         q = null;
         QuestionNumber = 0;
         score = 0;
@@ -213,18 +200,16 @@ public class StartTrivia extends Activity implements AsyncResponse {
         Button cButton = (Button) findViewById(R.id.cButton);
         Button dButton = (Button) findViewById(R.id.dButton);
         TextView cBox = (TextView) findViewById(R.id.cBox);
-        TextView qBox = (TextView) findViewById(R.id.qBox);
-        waitAnswers = true;
-        cBox.setText("Score: " + score);
+        cBox.setVisibility(View.INVISIBLE);
         cButton.setVisibility(View.INVISIBLE);
         dButton.setVisibility(View.INVISIBLE);
         fButton.setVisibility(View.INVISIBLE);
         tButton.setVisibility(View.INVISIBLE);
-        fetch = new FetchQuestions(this);
-        fetch.delegate = this;
-        fetch.execute(amountQ);
+        cBox.setText("Score: " + score);
+        test = new TestInternet();
+        test.delegate = this;
+        test.execute();
         return actOK;
-
     }
 
     public void setQuestions() {
@@ -236,17 +221,16 @@ public class StartTrivia extends Activity implements AsyncResponse {
         } catch (JSONException f) {
 
         }
-        final Button tButton = (Button) findViewById(R.id.tButton);
-        final Button fButton = (Button) findViewById(R.id.fButton);
-        final Button cButton = (Button) findViewById(R.id.cButton);
-        final Button dButton = (Button) findViewById(R.id.dButton);
-        final Button startOver = (Button) findViewById(R.id.startOver);
+        Button tButton = (Button) findViewById(R.id.tButton);
+        Button fButton = (Button) findViewById(R.id.fButton);
+        Button cButton = (Button) findViewById(R.id.cButton);
+        Button dButton = (Button) findViewById(R.id.dButton);
+        Button startOver = (Button) findViewById(R.id.startOver);
         TextView cBox = (TextView) findViewById(R.id.cBox);
         TextView qBox = (TextView) findViewById(R.id.qBox);
         cBox.setVisibility(View.VISIBLE);
 
         if (QuestionNumber == amountQ) {
-
 
             qBox.setVisibility(View.INVISIBLE);
             cButton.setVisibility(View.INVISIBLE);
@@ -263,9 +247,7 @@ public class StartTrivia extends Activity implements AsyncResponse {
             cButton.setText("");
             dButton.setText("");
 
-
         } else {
-
 
             setAnswers(q);
 
@@ -274,7 +256,6 @@ public class StartTrivia extends Activity implements AsyncResponse {
             QuestionNumber++;
 
         }
-
 
     }
 
@@ -315,7 +296,6 @@ public class StartTrivia extends Activity implements AsyncResponse {
 
         }
 
-
     }
 
     public boolean checkAnswer(String check) {
@@ -330,7 +310,6 @@ public class StartTrivia extends Activity implements AsyncResponse {
             return true;
 
         }
-
 
         return false;
     }
@@ -420,5 +399,22 @@ public class StartTrivia extends Activity implements AsyncResponse {
     public void processFinish(JSONObject output) {
         questions = output;
         setQuestions();
+    }
+
+    @Override
+    public void processFinish(Boolean output) {
+        Button startOver = (Button) findViewById(R.id.startOver);
+        if (output) {
+            startOver.setText("Start Over");
+            fetch = new FetchQuestions(this);
+            fetch.delegate = this;
+            fetch.execute(amountQ);
+        } else {
+            TextView qBox = (TextView) findViewById(R.id.qBox);
+            qBox.setText("Check your internet connection!");
+            qBox.setVisibility(View.VISIBLE);
+            startOver.setVisibility(View.VISIBLE);
+            startOver.setText("Retry");
+        }
     }
 }

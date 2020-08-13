@@ -55,7 +55,6 @@ public class FetchQuestions extends AsyncTask<Integer, Integer, JSONObject> {
 
             questions = new JSONObject(reString);
 
-
         } catch (JSONException f) {
             Log.e("JSON", "Error Detected: JSON", f);
             return null;
