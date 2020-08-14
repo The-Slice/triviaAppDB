@@ -1,42 +1,35 @@
 package fun.triviamania;
 
-import android.app.Activity;
 import android.os.AsyncTask;
 import android.util.Log;
-import android.view.View;
-import android.widget.Button;
-import android.widget.TextView;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
-import java.lang.ref.WeakReference;
 
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
-import static fun.triviamania.StartTrivia.Parse;
-
-public class FetchQuestions extends AsyncTask<String, Integer, JSONObject> {
+public class FetchToken extends AsyncTask<Integer, Integer, String> {
     public AsyncResponse delegate = null;
     static OkHttpClient oKClient = new OkHttpClient();
     static Request triviaAccess;
     static Response okResponse;
     static String reString;
-    static JSONObject questions;
+    static JSONObject token = new JSONObject();
 
     @Override
-    protected JSONObject doInBackground(String... params) {
+    protected String doInBackground(Integer... integers) {
 
         try {
 
-            triviaAccess = new Request.Builder().url("https://opentdb.com/api.php?amount=10&token=" + params[0]).build();
+            triviaAccess = new Request.Builder().url("https://opentdb.com/api_token.php?command=request").build();
             okResponse = oKClient.newCall(triviaAccess).execute();
             reString = okResponse.body().string();
-            questions = new JSONObject(reString);
-
+            token = new JSONObject(reString);
+            reString = token.get("token").toString();
 
         } catch (JSONException f) {
             Log.e("JSON", "Error Detected: JSON", f);
@@ -48,17 +41,12 @@ public class FetchQuestions extends AsyncTask<String, Integer, JSONObject> {
             return null;
         }
 
-        return questions;
-
+        return reString;
     }
 
     @Override
-    protected void onPostExecute(JSONObject questions) {
-
-        delegate.processFinishQuestions(questions);
+    protected void onPostExecute(String token) {
+        delegate.processFinishToken(token);
     }
-
-
 }
-
 

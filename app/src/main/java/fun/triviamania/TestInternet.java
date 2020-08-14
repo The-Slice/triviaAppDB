@@ -32,6 +32,6 @@ public class TestInternet extends AsyncTask<Integer, Integer, Boolean> {
 
     @Override
     protected void onPostExecute(Boolean test) {
-        delegate.processFinish(test);
+        delegate.processFinishInternet(test);
     }
 }

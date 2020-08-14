@@ -1,8 +1,10 @@
 package fun.triviamania;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 public interface AsyncResponse {
-    void processFinish(JSONObject output);
-    void processFinish(Boolean output);
+    void processFinishQuestions(JSONObject output) ;
+    void processFinishInternet(Boolean output);
+    void processFinishToken(String output);
 }

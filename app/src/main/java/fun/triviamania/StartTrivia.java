@@ -1,41 +1,36 @@
 package fun.triviamania;
 
 import android.app.Activity;
-import android.app.AlertDialog;
-import android.content.Intent;
-import android.graphics.Color;
+
 import android.graphics.PorterDuff;
-import android.os.AsyncTask;
+
 import android.os.Bundle;
-import android.os.Handler;
+
+import android.support.annotation.NonNull;
 import android.util.Log;
 import android.view.View;
-import android.view.ViewGroup;
+
 import android.widget.Button;
 import android.widget.TextView;
 
-import junit.framework.Test;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.IOException;
-
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
 
 import static org.apache.commons.lang3.StringEscapeUtils.unescapeHtml4;
 
 public class StartTrivia extends Activity implements AsyncResponse {
-    static TestInternet test = new TestInternet();
-    static FetchQuestions fetch = new FetchQuestions(null);
+    static TestInternet test;
+    static FetchQuestions fetch;
+    static FetchToken token;
     static final int amountQ = 10;
     static int QuestionNumber = 0;
     static int score = 0;
+    static String check = "false";
+    static String storeToken;
     static JSONObject questions = new JSONObject();
-    String check = "false";
-    QuestionObject q = new QuestionObject();
+    static QuestionObject q = new QuestionObject();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -200,7 +195,9 @@ public class StartTrivia extends Activity implements AsyncResponse {
         Button cButton = (Button) findViewById(R.id.cButton);
         Button dButton = (Button) findViewById(R.id.dButton);
         TextView cBox = (TextView) findViewById(R.id.cBox);
+        TextView qBox = (TextView) findViewById(R.id.qBox);
         cBox.setVisibility(View.INVISIBLE);
+        qBox.setVisibility(View.INVISIBLE);
         cButton.setVisibility(View.INVISIBLE);
         dButton.setVisibility(View.INVISIBLE);
         fButton.setVisibility(View.INVISIBLE);
@@ -396,19 +393,19 @@ public class StartTrivia extends Activity implements AsyncResponse {
     }
 
     @Override
-    public void processFinish(JSONObject output) {
-        questions = output;
-        setQuestions();
-    }
-
-    @Override
-    public void processFinish(Boolean output) {
+    public void processFinishInternet(@NonNull Boolean output) {
         Button startOver = (Button) findViewById(R.id.startOver);
         if (output) {
-            startOver.setText("Start Over");
-            fetch = new FetchQuestions(this);
-            fetch.delegate = this;
-            fetch.execute(amountQ);
+            if (storeToken != null) {
+                fetch = new FetchQuestions();
+                fetch.delegate = this;
+                fetch.execute(storeToken);
+            } else {
+                startOver.setText("Start Over");
+                token = new FetchToken();
+                token.delegate = this;
+                token.execute();
+            }
         } else {
             TextView qBox = (TextView) findViewById(R.id.qBox);
             qBox.setText("Check your internet connection!");
@@ -417,4 +414,30 @@ public class StartTrivia extends Activity implements AsyncResponse {
             startOver.setText("Retry");
         }
     }
+
+    @Override
+    public void processFinishToken(String output) {
+        storeToken = output;
+        fetch = new FetchQuestions();
+        fetch.delegate = this;
+        fetch.execute(storeToken);
+    }
+
+    @Override
+    public void processFinishQuestions(JSONObject output) {
+        try {
+            if (output.get("response_code").equals(3) || output.get("response_code").equals(4)) {
+                token = new FetchToken();
+                token.delegate = this;
+                token.execute();
+            } else {
+                questions = output;
+                setQuestions();
+            }
+        } catch (JSONException e) {
+            Log.e("JSON", "Error Detected: JSON", e);
+        }
+    }
+
+
 }
