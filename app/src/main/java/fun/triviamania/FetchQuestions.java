@@ -12,6 +12,7 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.lang.ref.WeakReference;
+import java.util.HashMap;
 
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -26,13 +27,27 @@ public class FetchQuestions extends AsyncTask<String, Integer, JSONObject> {
     static Response okResponse;
     static String reString;
     static JSONObject questions;
+    static String category;
+    static HashMap<String, String> catMap;
+
+
+    @Override
+    protected void onPreExecute() {
+        category = StartTrivia.getCategory();
+        catMap = StartTrivia.getCategoryMap();
+    }
 
     @Override
     protected JSONObject doInBackground(String... params) {
 
         try {
 
-            triviaAccess = new Request.Builder().url("https://opentdb.com/api.php?amount=10&token=" + params[0]).build();
+            if (!category.equals("Random")) {
+                triviaAccess = new Request.Builder().url("https://opentdb.com/api.php?amount=10&category=" + catMap.get(category) + "&token=" + params[0]).build();
+            } else {
+                triviaAccess = new Request.Builder().url("https://opentdb.com/api.php?amount=10&token=" + params[0]).build();
+            }
+
             okResponse = oKClient.newCall(triviaAccess).execute();
             reString = okResponse.body().string();
             questions = new JSONObject(reString);

@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <TextView xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@android:id/text1"
-    android:layout_width="wrap_content"
+    android:layout_width="250dp"
     android:layout_height="wrap_content"
-    android:dropDownWidth="wrap_content"
     android:popupTheme="@style/AppTheme"
     android:textColor="@color/Text"
-    android:textSize="18dp"
+    android:textSize="18sp"
     android:padding="10dp"
-    android:gravity="center"/>
+    android:gravity="center" />

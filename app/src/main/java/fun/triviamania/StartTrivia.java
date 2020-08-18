@@ -10,7 +10,9 @@ import android.support.annotation.NonNull;
 import android.util.Log;
 import android.view.View;
 
+import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.Spinner;
 import android.widget.TextView;
 
 
@@ -18,9 +20,14 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 
+import java.util.HashMap;
+
 import static org.apache.commons.lang3.StringEscapeUtils.unescapeHtml4;
 
 public class StartTrivia extends Activity implements AsyncResponse {
+    static String category;
+    static int catID;
+    static HashMap<String, String> catMap;
     static TestInternet test;
     static FetchQuestions fetch;
     static FetchToken token;
@@ -34,6 +41,8 @@ public class StartTrivia extends Activity implements AsyncResponse {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        setCategory();
+        setCategoryMap();
         StartTrivia actOK = new StartTrivia();
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_trivia_start);
@@ -47,7 +56,11 @@ public class StartTrivia extends Activity implements AsyncResponse {
         fButton.getBackground().setColorFilter(0xFF000000, PorterDuff.Mode.MULTIPLY);
         cButton.getBackground().setColorFilter(0xFF000000, PorterDuff.Mode.MULTIPLY);
         dButton.getBackground().setColorFilter(0xFF000000, PorterDuff.Mode.MULTIPLY);
-
+        Spinner categories = (Spinner) findViewById(R.id.category);
+        ArrayAdapter adapter = ArrayAdapter.createFromResource(this, R.array.categories, R.layout.spinner_category);
+        adapter.setDropDownViewResource(R.layout.dropdown_category);
+        categories.setAdapter(adapter);
+        categories.setSelection(getIntent().getIntExtra("Category_ID", 0));
         startOver.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -191,11 +204,13 @@ public class StartTrivia extends Activity implements AsyncResponse {
         QuestionNumber = 0;
         score = 0;
         Button tButton = (Button) findViewById(R.id.tButton);
+        Spinner categories = (Spinner) findViewById(R.id.category);
         Button fButton = (Button) findViewById(R.id.fButton);
         Button cButton = (Button) findViewById(R.id.cButton);
         Button dButton = (Button) findViewById(R.id.dButton);
         TextView cBox = (TextView) findViewById(R.id.cBox);
         TextView qBox = (TextView) findViewById(R.id.qBox);
+        categories.setVisibility(View.INVISIBLE);
         cBox.setVisibility(View.INVISIBLE);
         qBox.setVisibility(View.INVISIBLE);
         cButton.setVisibility(View.INVISIBLE);
@@ -203,6 +218,7 @@ public class StartTrivia extends Activity implements AsyncResponse {
         fButton.setVisibility(View.INVISIBLE);
         tButton.setVisibility(View.INVISIBLE);
         cBox.setText("Score: " + score);
+        category = categories.getSelectedItem().toString();
         test = new TestInternet();
         test.delegate = this;
         test.execute();
@@ -225,10 +241,11 @@ public class StartTrivia extends Activity implements AsyncResponse {
         Button startOver = (Button) findViewById(R.id.startOver);
         TextView cBox = (TextView) findViewById(R.id.cBox);
         TextView qBox = (TextView) findViewById(R.id.qBox);
+        Spinner categories = (Spinner) findViewById(R.id.category);
         cBox.setVisibility(View.VISIBLE);
 
         if (QuestionNumber == amountQ) {
-
+            categories.setVisibility(View.VISIBLE);
             qBox.setVisibility(View.INVISIBLE);
             cButton.setVisibility(View.INVISIBLE);
             dButton.setVisibility(View.INVISIBLE);
@@ -391,6 +408,23 @@ public class StartTrivia extends Activity implements AsyncResponse {
     public static int getScore() {
         return score;
     }
+
+    public void setCategory() {
+        category = getIntent().getStringExtra("Category");
+    }
+
+    public static String getCategory() {
+        return category;
+    }
+
+    public void setCategoryMap() {
+        catMap = (HashMap<String, String>) getIntent().getSerializableExtra("Category_Map");
+    }
+
+    public static HashMap<String, String> getCategoryMap() {
+        return catMap;
+    }
+
 
     @Override
     public void processFinishInternet(@NonNull Boolean output) {

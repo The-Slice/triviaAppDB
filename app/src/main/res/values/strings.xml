@@ -6,5 +6,34 @@
     <string name="StartOver">Start Over</string>
     <string name="cButton"></string>
     <string name="dButton"></string>
+    <string name="next">Next</string>
+    <string name="trivia_mania_n_the_questioning">Trivia Mania: \n The Questioning</string>
+    <string name="click_to_start">Click to Start!</string>
+    <string-array name="categories">
+        <item>Random</item>
+        <item>General Knowledge</item>
+        <item>Books</item>
+        <item>Film</item>
+        <item>Music</item>
+        <item>Musicals &amp; Theatres</item>
+        <item>Television</item>
+        <item>Video Games</item>
+        <item>Board Games</item>
+        <item>Science &amp; Nature</item>
+        <item>Computers</item>
+        <item>Mathematics</item>
+        <item>Mythology</item>
+        <item>Sports</item>
+        <item>Geography</item>
+        <item>History</item>
+        <item>Politics</item>
+        <item>Art</item>
+        <item>Animals</item>
+        <item>Vehicles</item>
+        <item>Comics</item>
+        <item>Gadgets</item>
+        <item>Japanese Anime &amp; Manga</item>
+        <item>Cartoon &amp; Animations</item>
+    </string-array>
 
 </resources>
